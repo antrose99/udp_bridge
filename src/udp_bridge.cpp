@@ -709,7 +709,7 @@ void UDPBridge::cleanupSentPackets()
   auto now = ros::Time::now();
   if(now.isValid && !now.isZero())
   {
-    auto old_enough = now - ros::Duration(3.0);
+    auto old_enough = now - ros::Duration(0.2);
     for(auto remote: remote_nodes_)
       if(remote.second)
         for(auto connection: remote.second->connections())
