@@ -1,0 +1,45 @@
+ARG ROS_DISTRIBUTION=noetic
+FROM ros:$ROS_DISTRIBUTION-ros-base
+
+#FROM osrf/ros:noetic-desktop-focal
+
+# install ros packages
+RUN set -ex && \
+    # Create a runner user for local development
+    groupadd --gid 1000 runner && \
+    useradd --uid 1000 --gid 1000 -m runner && \
+    apt-get update && apt-get install -y --no-install-recommends \
+    ros-noetic-desktop-full=1.5.0-1* \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set environment and working directory
+ENV ROS_WS /ros1_ws
+WORKDIR $ROS_WS
+
+COPY package.xml src/udp_bridge/package.xml
+
+# Install rosdep dependencies
+RUN . /opt/ros/$ROS_DISTRO/setup.sh && \
+    apt-get update && rosdep update --include-eol-distros && rosdep install -y \
+      --from-paths \
+        src \
+      --ignore-src \
+    && rm -rf /var/lib/apt/lists/*
+
+# Add common files and ROS 1 source code
+COPY . src/udp_bridge/
+
+#Build the Catkin workspace
+RUN . /opt/ros/$ROS_DISTRO/setup.sh \
+  && catkin_make
+
+# source workspace from entrypoint
+RUN sed --in-place \
+      's|^source .*|source "$ROS_WS/devel/setup.bash"|' \
+      /ros_entrypoint.sh
+
+RUN echo "source /ros_entrypoint.sh" >> /etc/bash.bashrc
+RUN echo "source ${ROS_WS}/devel/setup.bash" >> /etc/bash.bashrc
+
+# Set entrypoint
+CMD ["roslaunch", "udp_bridge", "laptop.launch"]

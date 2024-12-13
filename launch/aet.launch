@@ -1,0 +1,41 @@
+<launch>
+  <arg name="aet_port" default="8765"/>
+  <arg name="laptop_port" default="8764"/>
+  <arg name="laptop_host" default="localhost"/>
+  <arg name="max_packet_size" default="1440"/>
+  <node pkg="udp_bridge" type="udp_bridge_node" name="udp_bridge_aet">
+    <rosparam subst_value="True">
+    name: aet
+    port: $(arg aet_port)
+    maxPacketSize: $(arg max_packet_size)
+    remotes:
+      laptop:
+        connections:
+          default:
+            host: $(arg laptop_host)
+            port: $(arg laptop_port)
+            maximumBytesPerSecond: 100000000
+            topics:
+              video: 
+                source: /vision/camera_front_middle/video
+                destination: /bridged/vision/camera_front_middle/video
+                period: 0.0
+              viz3dObjects:
+                source: /BBoxLines
+                destination: /bridged/BBoxLines
+                period: 0.0
+              viz2dObjects:
+                source: /vision/camera_front_middle/objects
+                destination: /bridged/vision/camera_front_middle/objects
+                period: 0.0
+              viz2dObjectsIn3d:
+                source: /boundingBox3D
+                destination: /bridged/boundingBox3D
+                period: 0.0
+              lidars:
+                source: /downsampled_lidars
+                destination: /bridged/downsampled_lidars
+                period: 0.0
+    </rosparam>
+  </node>
+</launch>

@@ -1,0 +1,20 @@
+<launch>
+  <arg name="aet_host" default="localhost"/>
+  <arg name="aet_port" default="8765"/>
+  <arg name="laptop_port" default="8764"/>
+  <arg name="max_packet_size" default="1440"/>
+  <node pkg="udp_bridge" type="udp_bridge_node" name="udp_bridge_laptop">
+  <rosparam subst_value="True">
+    name: laptop
+    port: $(arg laptop_port)
+    maxPacketSize: $(arg max_packet_size)
+    remotes:
+      aet:
+        connections:
+          default:
+            host: $(arg aet_host)
+            port: $(arg aet_port)
+            maximumBytesPerSecond: 100000000
+    </rosparam>
+  </node>
+</launch>
